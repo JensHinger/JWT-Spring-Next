@@ -1,0 +1,4 @@
+.formContainer {
+    display: grid;
+    column-count: 2;
+}

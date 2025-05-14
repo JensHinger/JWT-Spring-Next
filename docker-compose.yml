@@ -1,0 +1,41 @@
+services:
+    postgresql:
+        container_name: pgdb
+        image: 'postgres:latest'
+        volumes:
+            - 'postgresql_data:/var/lib/postgresql/data'
+        environment:
+            POSTGRES_USER: $DB_USERNAME
+            POSTGRES_PASSWORD: $DB_PASSWORD
+            POSTGRES_DB: $DB_NAME
+        healthcheck:
+          test: ["CMD-SHELL", "pg_isready -U postgres"]
+          interval: 20s
+          timeout: 10s
+          retries: 5
+          
+    jwt-frontend:
+        build:
+            context: ./jwt_frontend
+            dockerfile: Dockerfile
+        restart: always
+        environment:
+            API_URL: $API_URL
+        ports:
+            - 3000:3000
+            
+    jwt-backend:
+        build:
+            context: ./jwt_backend
+            dockerfile: Dockerfile
+        environment:
+            POSTGRES_USER: $DB_USERNAME
+            POSTGRES_PASSWORD: $DB_PASSWORD
+            DATABASE_URL: $DATABASE_URL
+        restart: always
+        depends_on:
+            postgresql:
+                condition: service_healthy
+  
+volumes:
+    postgresql_data:
